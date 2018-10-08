@@ -14,17 +14,24 @@ def nombreVAR(index1,idVar):
 
 #Abrir archivo
 archivo = open("fuente.txt","r")
-lol= archivo.read()
+"""lol= archivo.read()
 archivo.close()
-
-#CADENA QUE SE VA ANALIZAR
-#cadena='#hola mundo \n  hola="gjk5"; #otro INT  perro = 8; \n INT no_  45;'
-cadena=lol
+"""
 #print(cadena)
 #Limpia comentarios, enter y tabulaciones
 # (Cuaquier espacio en blanco y comentarios del lenguaje)
-patron = re.compile(r'\s')
-depuracion= patron.sub('',DEC.COMENTARIOS(cadena))
+patron = re.compile(DEC.RESERVADAS['BLANCO'])
+cadena=""
+for lol in archivo:
+    linea=lol
+    #CADENA QUE SE VA ANALIZAR
+    #cadena='#hola mundo \n  hola="gjk5"; #otro INT  perro = 8; \n INT no_  45;'
+    if(linea.find("SALIDA") == -1):
+        cadena+=patron.sub('',DEC.COMENTARIOS(linea))
+    else:
+        cadena+=linea
+
+depuracion=cadena
 #depuración es una variable co el codigo del programa sin basura
 print("Depuracion: "+depuracion)
 #detecta instruccion por instruccion para analizar
@@ -35,12 +42,11 @@ nodo.setTIPO("")
 nodo.setID("")
 nodo.setVALOR("")
 for i in depuracion:
-        if i == ';':
-            #print(cad)
-            nodo=DEC.instrucciones(cad)
-            lineas.append(nodo)
-            index1=lineas.index(nodo)#retorna el index del nodo actual
-            nombreVAR(index1,nodo.getID())
-            cad=""
-        else:
-            cad+=i
+    if i == ';':
+        nodo=DEC.instrucciones(cad)
+        lineas.append(nodo)
+        index1=lineas.index(nodo)#retorna el index del nodo actual
+        nombreVAR(index1,nodo.getID())
+        cad=""
+    else:
+        cad+=i
