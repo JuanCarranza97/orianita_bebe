@@ -1,3 +1,7 @@
 #hola mundo 
- STR hola="gjk5"; #otro INT  perro = 8; 
- INT no_ = 45;
+ STR hola="=gjk5"; #otro INT  hola = 8;
+ INT h =5;
+ ###354sd
+STR non = "&45";
+SALIDA("HOLA MUNDO");
+

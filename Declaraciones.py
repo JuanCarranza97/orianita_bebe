@@ -4,28 +4,30 @@ RESERVADAS = {
     'BLANCO':r'\s',
     'ENTERO':'INT',
     'CADENA':'STR',
-    'OUTPUT':r'SALIDA'
+    'OUTPUT':r'SALIDA\(".*"\)',
+    'INPUT' :r'ENTRADA'
 }
 OPERADORES = {
-    'ID'     :r'[A-Za-z][A-Za-z_0-9]=*.*',
-    'ASIG'   :r'.*=.*',
+    'ID'     :r'[A-Za-z]+[A-Za-z_0-9]*=+.*',
+    'ASIG'   :r'=.*',
     'COMENT' :r'\#.*',
-    'NUMEROS':r'.*\d',
-    'CARACTERES':r'.*".*"'
+    'NUMEROS':r'\d',
+    'CARACTERES':r'".*"$'
 }
 #DICCIONARIO DE ERRORES
 ERRORES = {
     1:"NO EXISTE EL TIPO DE DATO: ",
     2:"NOMBRE INVALIDO: ",
     3:"VARIABLE NO INICIALIZADA: ",
-    4:"NO ES POSIBLE GUARDAR ESTE VALOR: "
+    4:"NO ES POSIBLE GUARDAR EL VALOR: ",
+    5:"YA EXISTE LA VARIABLE: "
 }
 #Clase para identificar variables con su información correspondiente
 class NODO:
     def __int__(self):
-        self.id=i
-        self.tipo=t
-        self.valor=v
+        self.id=""
+        self.tipo=""
+        self.valor=""
 
     def setTIPO(self,t):
         self.tipo=t
@@ -44,7 +46,15 @@ class NODO:
 
     def getVALOR(self):
         return self.valor
-
+#IMPRIMIR CADENAS DE TEXTO
+def SALIDAtexto():
+    pass
+#IMPRIMIR VARIABLES STR
+def SALIDASTR():
+    pass
+#IMPRIMIR VARIABLES INT
+def SALIDAINT():
+    pass
 #REMOVER COMENTARIOS
 def COMENTARIOS(cadena):
     p=re.compile(OPERADORES['COMENT'])
@@ -56,7 +66,10 @@ def t_ANALIZA(tip,t,n):
     print("TIPO: "+tip)
     #Creacion del nodo para añadirlo a la lista
     nodo = NODO()
+    #valores iniciales del nodo
     nodo.setTIPO(tip)
+    nodo.setID("")
+    nodo.setVALOR("")
     p_INT=re.compile(OPERADORES['ID'])
     matcher = p_INT.match(t)
     if matcher:#verifica si es valido el nombre de la variable
@@ -64,9 +77,13 @@ def t_ANALIZA(tip,t,n):
         for i in t:
             if (i == "="):
                 print ("IDENTIFICADOR: "+cad)
+                j=t.find("=")#obtiene la posición del simbolo =
                 nodo.setID(cad)#Guarda el valor del indentificador
+                cad=t[j:]#corta la cadena para tener solo el valor de la variable
+                break
             else:
                 cad+=i
+        t=cad
         p_INT=re.compile(OPERADORES['ASIG'])
         matcher = p_INT.match(t)
         if matcher:#Revisa si esta inicializada la variable
@@ -74,62 +91,50 @@ def t_ANALIZA(tip,t,n):
                 p_INT=re.compile(OPERADORES['NUMEROS'])
             elif(n==2):
                 p_INT=re.compile(OPERADORES['CARACTERES'])
+            t=t[1:]
             matcher = p_INT.match(t)
             if matcher:#Revisa que sea valio el valor en la variable
-                cad=""
-                for i in t:
-                    if i== "=":
-                        print ("VALOR: "+cad)
-                        nodo.setVALOR(cad)#valor de la variable
-                        lineas.append(nodo)
-                    else:
-                        cad+=i
+                print ("VALOR: "+t)
+                nodo.setVALOR(cad)#valor de la variable
             else:
                 print(ERRORES[4]+t)
         else:
             print(ERRORES[3]+t)
-
     else:
         print(ERRORES[2]+t)
+    return nodo
 
 
 #Manda cada instrucción a su función correspondiente
 #dependiendo si delcaración de variables INT o STR, IMPRIMIR, LEER)
 def instrucciones(ins):
-    #Se envia a analizar(cadena,tipo) 1)ENTERO 2)CADENA
+    #Se envia a analizar(tip,cadena,tipo) tip: cadena con el nombre del tipo de dato
+    #  1)ENTERO 2)CADENA
+    nodo=NODO()
+    nodo.setTIPO("")
+    nodo.setID("")
+    nodo.setVALOR("")
     swt=ins[:3]
     if(swt == RESERVADAS['ENTERO']):
         #Guarda el tipo de dato de la variable
-        t_ANALIZA(swt,ins[3:],1)
+        nodo=t_ANALIZA(swt,ins[3:],1)
     elif(swt == RESERVADAS['CADENA']):
-        t_ANALIZA(swt,ins[3:],2)
+        nodo=t_ANALIZA(swt,ins[3:],2)
     else:
-        print(ERRORES[1]+ins)
-
-#Abrir archivo
-archivo = open("fuente.txt","r")
-lol= archivo.read()
-archivo.close()
-
-#CADENA QUE SE VA ANALIZAR
-#cadena='#hola mundo \n  hola="gjk5"; #otro INT  perro = 8; \n INT no_  45;'
-cadena=lol
-#print(cadena)
-#Limpia comentarios, enter y tabulaciones
-# (Cuaquier espacio en blanco y comentarios del lenguaje)
-patron = re.compile(r'\s')
-depuracion= patron.sub('',COMENTARIOS(cadena))
-#depuración es una variable co el codigo del programa sin basura
-print("Depuracion: "+depuracion)
-#detecta instruccion por instruccion para analizar
-cad=""
-lineas=[]
-
-for i in depuracion:
-        if i == ';':
-            #print(cad)
-            instrucciones(cad)
-            cad=""
+        swt=ins[:6]
+        impresion=""
+        mensaje=""
+        if(swt== "SALIDA"):
+            patron=re.compile(RESERVADAS['OUTPUT'])
+            if(patron.match(ins)):
+                mensaje=ins[8:-2]
+                print(mensaje)
+                print("Correcto")
+            else:
+                print("Incorrecto")
         else:
-            #print(cad)
-            cad+=i
+            print(ERRORES[1]+ins)
+            nodo.setTIPO("")
+            nodo.setID("")
+            nodo.setVALOR("")
+    return nodo
